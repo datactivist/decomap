@@ -1,0 +1,144 @@
+---
+title: "**DeCoMap**"
+subtitle: "Analyse de la qualité des DECP"
+output:
+    html_document:
+        theme: paper
+        toc: yes
+        toc_float: yes
+---
+
+<style>
+body {
+text-align: justify
+}
+</style> 
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	eval = TRUE,
+	echo = FALSE,
+	fig.align = "center",
+	fig.show = "hold",
+	message = FALSE,
+	warning = FALSE,
+	collapse = TRUE,
+	out.width = "100%"
+)
+```
+
+<br>
+
+[![logo_datactivist](https://nextcloud.datactivist.coop/s/o53wzfMNnFosQni/preview)](https://datactivist.coop/fr/){width=25%}
+
+<br>
+
+```{r libraries}
+# Packages nécessaires à l'analyse
+packages = c("tidyverse", "data.table", "summarytools")
+
+## Installation des packages si besoin et chargement des librairies
+package.check <- lapply(
+  packages,
+  FUN = function(x) {
+    if (!require(x, character.only = TRUE)) {
+      install.packages(x, dependencies = TRUE)
+      library(x, character.only = TRUE)
+    }
+  }
+)
+```
+
+----
+
+
+# Niveau des communes
+
+## Import des données
+
+<br>
+
++ **DECP**
+
+```{r import}
+# Import des DECP
+    #https://data.economie.gouv.fr/explore/dataset/decp_augmente/export/
+decp_data <- fread("https://data.economie.gouv.fr/explore/dataset/decp_augmente/download/?format=csv&timezone=Europe/Berlin&lang=fr&use_labels_for_header=true&csv_separator=%3B")
+n_decp <- nrow(decp_data)
+
+# Suppression des doublons liés aux marchés multi-attribués
+decp_unique <- decp_data %>% group_by(id) %>% slice(1)
+n_decp_unique <- nrow(decp_unique)
+
+# Nombre d'observations en moins
+diff <- n_decp - n_decp_unique
+```
+
+Nous importons les **données essentielles de la commande publique** depuis la plateforme [data.economie.gouv.fr](https://data.economie.gouv.fr/explore/dataset/decp_augmente/export/). La base comporte `r n_decp` enregistrements à l'import, et `r n_decp_unique` lorsque l'on supprime les doublons liés aux marchés multi-attributaires, soit une différence de `r diff` observations. 
+
+
+
++ **OFGL**
+
+<br>
+
+
+```{r import}
+# Import des données budgétaires de l'OFGL pour 2020 - Communes
+    #https://data.ofgl.fr/explore/dataset/ofgl-base-communes-consolidee/table/?disjunctive.reg_name&disjunctive.dep_name&disjunctive.epci_name&disjunctive.tranche_population&disjunctive.tranche_revenu_imposable_par_habitant&disjunctive.com_name&disjunctive.agregat&sort=exer
+ofgl_data <- fread("https://data.ofgl.fr/explore/dataset/ofgl-base-communes-consolidee/download/?format=csv&disjunctive.reg_name=true&disjunctive.dep_name=true&disjunctive.epci_name=true&disjunctive.tranche_population=true&disjunctive.tranche_revenu_imposable_par_habitant=true&disjunctive.com_name=true&disjunctive.agregat=true&refine.exer=2020&refine.agregat=D%C3%A9penses+totales&timezone=Europe/Berlin&lang=fr&use_labels_for_header=true&csv_separator=%3B")
+n_ofgl <- nrow(ofgl_data)
+```
+
+Nous importons les **données budgétaires** des communes en 2020 depuis la plateforme [data.ofgl.fr](https://data.ofgl.fr/pages/accueil/), en ne gardant que l'agrégat 'Dépenses totales'. La base comporte `r n_ofgl` enregistrements à l'import.
+
+
+## Aperçu des données
+
+```{r}
+glimpse(decp_data)
+```
+
+```{r}
+glimpse(ofgl_data)
+```
+
+
+```{r}
+view(dfSummary(ofgl_data))
+```
+
++ **Statistiques descriptives**
+
+
+```{r}
+# Stats sur les données sans doublons
+montants_decp_acheteurs <- decp_unique %>% group_by(idAcheteur) %>% summarise(somme = sum(montant))
+```
+
+```{r}
+# Stats sur les données complètes
+infos_decp_titulaires <- decp_data %>% group_by(idAcheteur) %>% summarise(nb_marches = n_distinct(idMarche),
+                                                                            nb_titulaires = n_distinct(sirenEtablissement))
+```
+
+ajouter Marseille aux DECP
+mm filtres DECP et OFGL : 2020, communes
+
+filtre anneeNotification == 2020
+joindre montants DECP avec dépenses totales OFGL
+ratio montants/dép tot
+distrib des ratios
+sur 50 plus gros acheteurs : budget vs montant déclaré ds DECP (log si valeurs Paris >>)
+rapprocher aux stats officielles % budget dép en marchés publics
+
+leaflet des montants + dép tot + ratios (50 plus grosses communes) + pop
+zoom ratios >= 1, nb communes à 0
+
+
+
+
+
+
+
