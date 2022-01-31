@@ -1,2 +1,2 @@
 # decomap
-Analyse de la corruption des DECP
+Analyse de la qualité des DECP
