@@ -2,7 +2,7 @@
 
 ## Analyse de la qualité des DECP
 
-**Objectif** : mettre en lumières les anomalies, les problèmes de qualité des données de la commande publique en comparant les montants des marchés publics d'une entité à ses dépenses totales.
+**Objectif** : mettre en lumière les anomalies, les problèmes de qualité des données de la commande publique en comparant les montants des marchés publics d'une entité à ses dépenses totales.
 
 Méthodologie en 4 étapes : 
 - récuperer les **DECP** sur [data.economie.gouv.fr](https://data.economie.gouv.fr/explore/dataset/decp_augmente/table/)
